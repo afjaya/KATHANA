@@ -1,0 +1,42 @@
+name: Auto Generate Story Episode
+
+on:
+  schedule:
+    # Perintah Cron: Berjalan setiap hari jam 00:00 UTC (Jam 07:00 WIB)
+    # Kamu bisa menyesuaikan jadwalnya di sini
+    - cron: "0 0 * * *"
+
+  # Izinkan pemicu manual dari tab Actions di GitHub
+  workflow_dispatch:
+
+jobs:
+  run-story-engine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-genai python-dotenv python-docx
+
+      - name: Run Story Engine (pilar.py)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python pilar.py
+
+      - name: Commit and Push Updated db.json and Stories
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add db.json stories/
+          git status
+          git diff-index --quiet HEAD || (git commit -m "auto: generate episode via cron" && git push)
