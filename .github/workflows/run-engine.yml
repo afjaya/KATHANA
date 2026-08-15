@@ -2,8 +2,8 @@ name: Run Story Engine
 
 on:
   workflow_dispatch: # Tombol manual di tab Actions GitHub
-  # schedule:
-  #   - cron: '0 0 * * *' # Opsional: Uncomment jika ingin otomatis setiap jam 12 malam
+  schedule:
+    - cron: "0 0,6,12,18 * * *" # Otomatis berjalan 4 kali sehari
 
 permissions:
   contents: write
@@ -32,10 +32,18 @@ jobs:
         run: |
           python src/main.py
 
+      - name: Upload to Google Drive
+        uses: adityak74/google-drive-upload-action@main
+        with:
+          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
+          localFilePath: episode_*.docx
+          uploadMethod: media
+
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.node.email"
           git add data/story.json
-          git diff --staged --quiet || git commit -m "Auto-generate new episode via Story Engine [skip ci]"
+          git diff --staged --quiet || git commit -m "Auto-generate new episode & docx via Story Engine [skip ci]"
           git push
