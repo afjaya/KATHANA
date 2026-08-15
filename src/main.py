@@ -58,9 +58,8 @@ def generate_next_episode(story_data):
 
     print(f"Sedang meracik Episode {episode_number} via REST API...")
     
-    # Menggunakan endpoint REST API resmi v1beta dengan model gemini-2.5-flash
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-    
+   # Menggunakan model gemini-3.5-flash yang aktif saat ini
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
