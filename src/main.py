@@ -115,7 +115,7 @@ def save_to_docx(episode):
     doc.add_heading("Isi Cerita:", level=2)
     doc.add_paragraph(episode['content'])
     
-    filename = f"episode_{episode['episodeNumber']:02d}.docx"
+    filename = f"episode_{episode['episodeNumber']:03d}.docx"
     doc.save(filename)
     print(f"File dokumen {filename} berhasil dibuat secara lokal.")
     return filename
