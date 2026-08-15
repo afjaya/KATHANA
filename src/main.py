@@ -2,6 +2,8 @@ import os
 import json
 from google import genai
 from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()  # Memuat variabel dari file .env secara lokal
 
 # Inisialisasi client Gemini menggunakan API Key dari Environment Variable GitHub Actions
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -25,7 +27,6 @@ def generate_next_episode(story_data):
     
     episode_number = len(episodes) + 1
     
-    # Rangkuman episode terakhir untuk konteks kesinambungan cerita
     last_episode_summary = "Ini adalah awal mula cerita (Episode 1)."
     if episodes:
         last_ep = episodes[-1]
@@ -49,7 +50,8 @@ def generate_next_episode(story_data):
     - Fokus pada ketegangan atmosferik, pertentangan antara Klan Lencana Perak Atas dan Bawah, serta penggunaan pedang perak dingin dan Dengung Giok.
     - Akhiri episode dengan ketegangan atau *cliffhanger* yang menarik untuk episode berikutnya.
     
-    Berikan output dalam format JSON mentah (tanpa blok markdown tambahan ```json ... ``` agar mudah diparse) dengan struktur kunci berikut:
+    PENTING: Berikan output murni dalam format JSON object dengan tanda kurung kurawal pembuka {{ dan penutup }}. Jangan sertakan teks penjelasan lain di luar JSON.
+    Struktur JSON:
     {{
       "title": "Judul Episode yang Menarik",
       "summary": "Ringkasan 1-2 kalimat dari peristiwa penting di episode ini",
@@ -58,21 +60,23 @@ def generate_next_episode(story_data):
     """
 
     print(f"Sedang meracik Episode {episode_number}...")
+    
+    # Menggunakan model gemini-1.5-flash yang stabil
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-1.5-flash",
         contents=prompt,
     )
     
     text_response = response.text.strip()
-    # Bersihkan jika ada format markdown block
-    if text_response.startswith("```json"):
-        text_response = text_response[7:]
-    if text_response.endswith("```"):
-        text_response = text_response[:-3]
-        
-    new_ep_data = json.loads(text_response.strip())
     
-    # Tambahkan metadata episode
+    # Pembersihan ekstra untuk memastikan format JSON bersih dari markdown
+    if "```json" in text_response:
+        text_response = text_response.split("```json")[1].split("```")[0].strip()
+    elif "```" in text_response:
+        text_response = text_response.split("```")[1].split("```")[0].strip()
+        
+    new_ep_data = json.loads(text_response)
+    
     new_episode = {
         "episodeNumber": episode_number,
         "title": new_ep_data.get("title", f"Episode {episode_number}"),
@@ -85,14 +89,10 @@ def generate_next_episode(story_data):
 
 if __name__ == "__main__":
     data = load_story_data()
-    
-    # Buat episode baru
     new_ep = generate_next_episode(data)
     
-    # Masukkan ke dalam array episodes
     data["episodes"].append(new_ep)
     data["storyBible"]["updatedAt"] = datetime.utcnow().isoformat() + "Z"
     
-    # Simpan kembali
     save_story_data(data)
     print(f"Berhasil! Episode '{new_ep['title']}' sukses ditambahkan ke story.json, Bosku.")
