@@ -1,0 +1,41 @@
+{
+  "storyBible": {
+    "genre": "Romance/Misteri",
+    "universeName": "Istana Naga: Klan Lencana Perak",
+    "storyStyle": "Atmospheric, visceral narrative with high-contrast magic.",
+    "narratorStyle": "Third-Person Limited, sensory-heavy and grounded.",
+    "language": "Indonesia",
+    "writingRules": "Show, don't tell. Focus on cold silver weapons, mystical hum of Secret Jade, and tension between light and shadow.",
+    "worldMechanics": {
+      "secretJade": "Sistem sihir berbasis resonansi energi spiritual purba dari pecahan 'Giok Langit'. Penggunaan selain Klan Lencana Perak memicu 'Dengung Giok' (Jade Hum) yang dapat membekukan jalur darah dan merusak organ pengguna jika tidak disalurkan melalui Lencana Antik Klan Lencana Perak.",
+      "silverLaw": "Kekuatan Energi Giok Langit yang murni dapat menyalurkan energi Dewa pada pemiliknya. Perak murni warisan Klan Lencana Perak bertindak sebagai konduktor dan penstabil utama energi Giok Rahasia. Senjata dari perak dingin mampu memotong aliran energi giok aktif, namun harus melalui jalur pernikahan atau transfusi darah yang sangat dilarang.",
+      "contrastTension": "Dunia terbagi secara visual dan sosial antara Klan Lencana Perak Atas yang benderang oleh pendar hijau murni dari batu giok berkualitas tinggi, dan Klan Lencana Perak Bawah yang kelam, dingin, serta bergantung pada sisa-sisa energi pecahan giok liar yang telah terkontaminasi kekuatan iblis."
+    },
+    "episodeLength": 2000,
+    "tone": "Mysterious, high-contrast, Klasik",
+    "updatedAt": "2026-08-15T12:44:40.000Z"
+  },
+  "characters": [
+    {
+      "id": "char-1",
+      "name": "San Kathana",
+      "role": "Pewaris Tunggal Istana Naga (Klan Lencana Perak)",
+      "personality": "Disiplin tinggi, kaku, tertutup, dan dihantui rasa bersalah mendalam akibat tragedi masa lalu yang meruntuhkan kejayaan keluarganya.",
+      "lore": "Meskipun menyandang gelar pewaris agung, ia hidup dalam kemiskinan struktural pasca-kudeta halus. Ia menolak menggunakan pasokan energi giok modern dari pemerintah klan baru dan memilih bertahan dengan teknik pedang perak dingin warisan leluhurnya yang kusam.",
+      "narrativeDrive": "Memulihkan nama baik Klan Lencana Perak tanpa harus mengorbankan moralitasnya yang tersisa.",
+      "status": "Alive",
+      "location": "Istana Naga (Klan Lencana Perak Bawah)"
+    },
+    {
+      "id": "char-2",
+      "name": "Sumi Rashi",
+      "role": "Penyusup / Ahli Giok Liar / Pernah menerima transfusi darah dari orang Klan Lencana Perak",
+      "personality": "Sarkastik, adaptif, berani mengambil risiko, namun menyembunyikan kerapuhan di balik topeng ketangguhannya.",
+      "lore": "Tidak diketahui asalnya, ia mampu memanipulasi energi pecahan giok secara autodidak tanpa menggunakan lencana perak pelindung—sebuah pelanggaran hukum berat yang membuat tubuhnya perlahan mengalami gejala semi Dewa akibat dengung giok liar yang terkontaminasi energi iblis.",
+      "narrativeDrive": "Mencari Kitab Rahasia pengendalian giok kuno Istana Naga demi menyembuhkan wabah pembekuan darah yang dialami sahabatnya yang bernama Yura.",
+      "status": "Alive",
+      "location": "Perbatasan Klan Lencana Perak"
+    }
+  ],
+  "episodes": []
+}
