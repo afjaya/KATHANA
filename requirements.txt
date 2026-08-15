@@ -1,1 +1,4 @@
 requests
+python-docx
+google-auth
+google-api-python-client

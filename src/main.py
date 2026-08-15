@@ -2,9 +2,15 @@ import os
 import json
 import requests
 from datetime import datetime
+from docx import Document
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
-# Mengambil API Key dari Environment Variable GitHub Actions
+# Mengambil Environment Variables
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GDRIVE_CREDENTIALS = os.environ.get("GDRIVE_CREDENTIALS")
+GDRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID")
 DATA_PATH = "data/story.json"
 
 def load_story_data():
@@ -58,8 +64,8 @@ def generate_next_episode(story_data):
 
     print(f"Sedang meracik Episode {episode_number} via REST API...")
     
-   # Menggunakan model gemini-3.5-flash yang aktif saat ini
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
+    
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
@@ -77,7 +83,6 @@ def generate_next_episode(story_data):
     
     res_data = response.json()
     
-    # Ambil teks hasil generate dari struktur response Gemini
     try:
         text_response = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
     except (KeyError, IndexError) as e:
@@ -101,6 +106,39 @@ def generate_next_episode(story_data):
     
     return new_episode
 
+def save_to_docx(episode):
+    doc = Document()
+    doc.add_heading(episode['title'], level=0)
+    doc.add_paragraph(f"Episode: {episode['episodeNumber']} | Tanggal: {episode['createdAt']}")
+    doc.add_heading("Ringkasan:", level=2)
+    doc.add_paragraph(episode['summary'])
+    doc.add_heading("Isi Cerita:", level=2)
+    doc.add_paragraph(episode['content'])
+    
+    filename = f"episode_{episode['episodeNumber']:02d}.docx"
+    doc.save(filename)
+    print(f"File dokumen {filename} berhasil dibuat secara lokal.")
+    return filename
+
+def upload_to_drive(file_path):
+    if not GDRIVE_CREDENTIALS or not GDRIVE_FOLDER_ID:
+        print("Peringatan: GDRIVE_CREDENTIALS atau GDRIVE_FOLDER_ID tidak diset. Lewat proses upload.")
+        return
+    
+    print("Mengunggah dokumen ke Google Drive...")
+    creds_json = json.loads(GDRIVE_CREDENTIALS)
+    creds = service_account.Credentials.from_service_account_info(creds_json)
+    service = build('drive', 'v3', credentials=creds)
+    
+    file_metadata = {
+        'name': os.path.basename(file_path),
+        'parents': [GDRIVE_FOLDER_ID]
+    }
+    media = MediaFileUpload(file_path, mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    
+    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    print(f"Berhasil! File terupload ke Google Drive dengan ID: {file.get('id')}")
+
 if __name__ == "__main__":
     data = load_story_data()
     new_ep = generate_next_episode(data)
@@ -109,4 +147,9 @@ if __name__ == "__main__":
     data["storyBible"]["updatedAt"] = datetime.utcnow().isoformat() + "Z"
     
     save_story_data(data)
-    print(f"Berhasil! Episode '{new_ep['title']}' sukses ditambahkan ke story.json, Bosku.")
+    
+    # Buat file docx lalu upload ke Drive
+    docx_file = save_to_docx(new_ep)
+    upload_to_drive(docx_file)
+    
+    print(f"Selesai! Episode '{new_ep['title']}' sukses diproses sepenuhnya, Bosku.")
