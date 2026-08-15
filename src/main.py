@@ -120,36 +120,59 @@ def save_to_docx(episode):
     print(f"File dokumen {filename} berhasil dibuat secara lokal.")
     return filename
 
+from google.oauth2.credentials import Credentials
+
 def upload_to_drive(file_path):
-    if not GDRIVE_CREDENTIALS or not GDRIVE_FOLDER_ID:
-        print("Peringatan: GDRIVE_CREDENTIALS atau GDRIVE_FOLDER_ID tidak diset. Lewat proses upload.")
+    # Mengambil variabel OAuth dari environment (yang dikirim via GitHub Secrets)
+    client_id = os.getenv("GOOGLE_DRIVE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_DRIVE_CLIENT_SECRET")
+    refresh_token = os.getenv("GOOGLE_DRIVE_REFRESH_TOKEN")
+    folder_id = os.getenv("GDRIVE_FOLDER_ID") # Sesuaikan jika nama variable Anda berbeda di main.py
+    
+    if not refresh_token or not folder_id:
+        print("Peringatan: Konfigurasi Google Drive OAuth tidak lengkap. Lewat proses upload.")
         return
     
-    print("Mengunggah dokumen ke Google Drive...")
-    creds_json = json.loads(GDRIVE_CREDENTIALS)
-    creds = service_account.Credentials.from_service_account_info(creds_json)
+    print("Mengunggah dokumen ke Google Drive via OAuth Credentials...")
+    
+    # Membentuk kredensial OAuth secara dinamis dari Refresh Token pribadi Anda
+    creds = Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        client_id=client_id,
+        client_secret=client_secret,
+        token_uri="https://oauth2.googleapis.com/token"
+    )
+    
     service = build('drive', 'v3', credentials=creds)
     
     file_metadata = {
         'name': os.path.basename(file_path),
-        'parents': [GDRIVE_FOLDER_ID]
+        'parents': [folder_id]
     }
     media = MediaFileUpload(file_path, mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     
     file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
     print(f"Berhasil! File terupload ke Google Drive dengan ID: {file.get('id')}")
+def main():
+    print("Memulai FASTORY Engine...")
+    story_data = load_story_data()
+    
+    # 1. Generate episode baru via Gemini AI
+    new_episode = generate_next_episode(story_data)
+    
+    # 2. Simpan ke file JSON utama
+    story_data["episodes"].append(new_episode)
+    save_story_data(story_data)
+    print(f"Episode {new_episode['episodeNumber']} berhasil ditambahkan ke db.json")
+    
+    # 3. Buat file dokumen .docx
+    docx_path = save_to_docx(new_episode)
+    
+    # 4. Upload otomatis ke Google Drive via OAuth
+    upload_to_drive(docx_path)
+    
+    print("Semua proses selesai dengan sukses, Bosku!")
 
 if __name__ == "__main__":
-    data = load_story_data()
-    new_ep = generate_next_episode(data)
-    
-    data["episodes"].append(new_ep)
-    data["storyBible"]["updatedAt"] = datetime.utcnow().isoformat() + "Z"
-    
-    save_story_data(data)
-    
-    # Buat file docx lalu upload ke Drive
-    docx_file = save_to_docx(new_ep)
-    upload_to_drive(docx_file)
-    
-    print(f"Selesai! Episode '{new_ep['title']}' sukses diproses sepenuhnya, Bosku.")
+    main()
