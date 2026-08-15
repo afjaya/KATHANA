@@ -29,16 +29,10 @@ jobs:
       - name: Run Engine Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
           python src/main.py
-
-      - name: Upload to Google Drive
-        uses: adityak74/google-drive-upload-action@main
-        with:
-          credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
-          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
-          localFilePath: episode_*.docx
-          uploadMethod: media
 
       - name: Commit and Push Changes
         run: |
