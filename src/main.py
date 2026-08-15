@@ -1,13 +1,10 @@
 import os
 import json
-from google import genai
+import requests
 from datetime import datetime
-from dotenv import load_dotenv
-load_dotenv()  # Memuat variabel dari file .env secara lokal
 
-# Inisialisasi client Gemini menggunakan API Key dari Environment Variable GitHub Actions
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-
+# Mengambil API Key dari Environment Variable GitHub Actions
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 DATA_PATH = "data/story.json"
 
 def load_story_data():
@@ -59,17 +56,35 @@ def generate_next_episode(story_data):
     }}
     """
 
-    print(f"Sedang meracik Episode {episode_number}...")
+    print(f"Sedang meracik Episode {episode_number} via REST API...")
     
-    # Menggunakan model gemini-1.5-flash yang stabil
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt,
-    )
+    # Menggunakan endpoint REST API resmi v1beta dengan model gemini-2.5-flash
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     
-    text_response = response.text.strip()
+    payload = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }]
+    }
     
-    # Pembersihan ekstra untuk memastikan format JSON bersih dari markdown
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(url, json=payload, headers=headers)
+    
+    if response.status_code != 200:
+        raise Exception(f"Gagal memanggil API Google: {response.status_code} - {response.text}")
+    
+    res_data = response.json()
+    
+    # Ambil teks hasil generate dari struktur response Gemini
+    try:
+        text_response = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except (KeyError, IndexError) as e:
+        raise Exception(f"Struktur respons API tidak sesuai: {res_data}") from e
+    
+    # Bersihkan markdown block jika ada
     if "```json" in text_response:
         text_response = text_response.split("```json")[1].split("```")[0].strip()
     elif "```" in text_response:
