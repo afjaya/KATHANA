@@ -1,7 +1,7 @@
 name: Run Story Engine
 
 on:
-  workflow_dispatch:  # Tombol manual di tab Actions GitHub
+  workflow_dispatch: # Tombol manual di tab Actions GitHub
   # schedule:
   #   - cron: '0 0 * * *' # Opsional: Uncomment jika ingin otomatis setiap jam 12 malam
 
@@ -18,8 +18,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          cache: 'pip'
+          python-version: "3.10"
+          cache: "pip"
 
       - name: Install Dependencies
         run: |
@@ -32,7 +32,7 @@ jobs:
         run: |
           python src/main.py
 
-          - name: Commit and Push Changes
+      - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.node.email"
